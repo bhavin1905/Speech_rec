@@ -1,0 +1,171 @@
+import pydub
+import json
+import subprocess
+from pydub import AudioSegment
+import noisereduce as nr
+
+# Specify the FFmpeg path
+ffmpeg_path = r"C:\ProgramData\chocolatey\bin\ffmpeg.exe"
+AudioSegment.ffmpeg = ffmpeg_path
+
+# Input audio file (replace with your own file)
+audio_file_path = r"alis/test.mp3"
+
+# Output JSON file for segmented and transcribed conversation
+output_json_file = "conversation.json"
+
+# Define the path to the Whisper ASR model
+whisper_model_path = r"C:\Users\ASUS\.cache\whisper"
+
+# Helper function to transcribe audio using Whisper
+def transcribe_audio(audio_path):
+    try:
+        result = subprocess.check_output([
+            "whisper", "transcribe", audio_path, "--model", whisper_model_path
+        ], stderr=subprocess.STDOUT, universal_newlines=True)
+        return result.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Whisper Error: {e.output}")
+        return ""
+
+# Load the audio file using PyDub
+audio = AudioSegment.from_file(audio_file_path)
+
+# Remove noise from the audio (if needed)
+remove_noise = nr.reduce_noise(y=audio, sr=audio.frame_rate)
+reduced_audio_segment = AudioSegment(
+    remove_noise.tobytes(),
+    frame_rate=audio.frame_rate,
+    sample_width=remove_noise.dtype.itemsize,
+    channels=1  # Mono audio
+)
+
+audio = remove_noise(audio)
+
+# Normalize the volume of the audio (if needed)
+audio = remove_noise.normalize_volume(audio)
+
+# Split the audio into segments belonging to the caller and the callee
+# You will need to customize this part based on your audio and how you want to split it
+
+# For demonstration, let's assume we split the audio into two segments equally
+halfway_point = len(audio) // 2
+caller_segment = audio[:halfway_point]
+callee_segment = audio[halfway_point:]
+
+# Save the caller and callee segments as separate audio files
+caller_segment.export("caller.wav", format="wav")
+callee_segment.export("callee.wav", format="wav")
+
+# Transcribe the audio segments using Whisper
+caller_transcription = transcribe_audio("caller.wav")
+callee_transcription = transcribe_audio("callee.wav")
+
+# Create a JSON structure for the conversation
+conversation = [
+    {
+        "speaker": "caller",
+        "transcription": caller_transcription
+    },
+    {
+        "speaker": "callee",
+        "transcription": callee_transcription
+    }
+]
+
+# Write the conversation to a JSON file
+with open(output_json_file, "w") as json_file:
+    json.dump(conversation, json_file, indent=4)
+
+print(f"Segmented and transcribed conversation saved to {output_json_file}")
+
+import pydub
+import json
+import subprocess
+import numpy as np
+from pydub import AudioSegment
+import noisereduce as nr
+
+# Specify the FFmpeg path
+ffmpeg_path = r"C:\ProgramData\chocolatey\bin\ffmpeg.exe"
+AudioSegment.ffmpeg = ffmpeg_path
+
+# Input audio file (replace with your own file)
+audio_file_path = r"alis/test.mp3"
+
+# Output JSON file for segmented and transcribed conversation
+output_json_file = "conversation.json"
+
+# Define the path to the Whisper ASR model
+whisper_model_path = r"C:\Users\ASUS\.cache\whisper"
+
+# Helper function to transcribe audio using Whisper
+def transcribe_audio(audio_path):
+    try:
+        result = subprocess.check_output([
+            "whisper", "transcribe", audio_path, "--model", "large"  # Specify the desired model name here
+        ], stderr=subprocess.STDOUT, universal_newlines=True)
+        return result.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Whisper Error: {e.output}")
+        return ""
+
+# Load the audio file using PyDub
+audio = AudioSegment.from_file(audio_file_path)
+
+# Convert audio to a NumPy array (mono channel)
+audio_data = np.array(audio.get_array_of_samples())
+
+# Perform noise reduction using noisereduce
+reduced_noise = nr.reduce_noise(y=audio_data, sr=audio.frame_rate)
+
+# Create a PyDub audio segment from the reduced noise data
+reduced_noise_audio = AudioSegment(
+    reduced_noise.tobytes(),
+    frame_rate=audio.frame_rate,
+    sample_width=reduced_noise.dtype.itemsize,
+    channels=1
+)
+
+# Normalize the volume of the audio
+audio = reduced_noise_audio.normalize()
+
+# Split the audio into segments belonging to the caller and the callee
+# You will need to customize this part based on your audio and how you want to split it
+
+# For demonstration, let's assume we split the audio into two segments equally
+halfway_point = len(audio) // 2
+caller_segment = audio[:halfway_point]
+callee_segment = audio[halfway_point:]
+
+# Save the caller and callee segments as separate audio files
+caller_segment.export("caller.wav", format="wav")
+callee_segment.export("callee.wav", format="wav")
+
+# Transcribe the audio segments using Whisper
+caller_transcription = transcribe_audio("caller.wav")
+callee_transcription = transcribe_audio("callee.wav")
+
+# Create a JSON structure for the conversation
+conversation = [
+    {
+        "speaker": "caller",
+        "transcription": caller_transcription
+    },
+    {
+        "speaker": "callee",
+        "transcription": callee_transcription
+    }
+]
+
+# Write the conversation to a JSON file
+with open(output_json_file, "w") as json_file:
+    json.dump(conversation, json_file, indent=4)
+
+print(f"Segmented and transcribed conversation saved to {output_json_file}")
+
+audio_clip_path = "alis/test.mp3"
+result = subprocess.check_output([
+    "whisper", "transcribe", audio_clip_path, "--model", whisper_model_path
+], stderr=subprocess.STDOUT, universal_newlines=True)
+print(result.strip())
